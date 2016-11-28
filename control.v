@@ -7,6 +7,7 @@ module control(
 	input			idle_done, 			//FRAME DONE SIGNAL				FROM DATAPATH
 	//input 		gen_move_done, 		//MOVEMENT DONE SIGNAL 			FROM DATAPATH
 	input 		check_collide_done, //COLLIDE DONE SIGNAL 			FROM DATAPATH
+	input			gen_move_done,
 	input			draw_map_done,		//DRAW DONE SIGNAL				FROM DATAPATH
 	input 			draw_link_done, 	//DRAW DONE SIGNAL 				FROM DATAPATH
 	input 			draw_enemies_done, 	//DRAW DONE SIGNAL 				FROM DATAPATH
@@ -34,6 +35,7 @@ module control(
 					S_DRAW_MAP			= 4'b0110, 		//DRAW MAP
 					S_DRAW_LINK 		= 4'b0111, 		//DRAW USER CHARACTER
 					S_DRAW_ENEMIES 		= 4'b1000, 		//DRAW ENEMIES
+					S_TEST 				= 4'b1001,
 					ON 					= 1'b1,
 					OFF 				= 1'b0;
 
@@ -47,13 +49,14 @@ module control(
 		case(current_state)
 			S_INIT: 				next_state = S_DRAW_MAP;
 			S_IDLE:					next_state = idle_done ? S_GEN_MOVEMENT : S_IDLE;
-			S_GEN_MOVEMENT: 		next_state = S_CHECK_COLLIDE;
+			S_GEN_MOVEMENT: 		next_state = gen_move_done ? S_CHECK_COLLIDE : S_GEN_MOVEMENT;
 			S_CHECK_COLLIDE:	 	next_state = check_collide_done? S_LINK_ACTION : S_CHECK_COLLIDE;
 			S_LINK_ACTION:			next_state = S_MOVE_ENEMIES;
 			S_MOVE_ENEMIES: 		next_state = S_DRAW_MAP;
 			S_DRAW_MAP:				next_state = draw_map_done ? S_DRAW_LINK : S_DRAW_MAP;
 			S_DRAW_LINK: 			next_state = draw_link_done ? S_DRAW_ENEMIES : S_DRAW_LINK;
 			S_DRAW_ENEMIES:			next_state = draw_enemies_done ? S_IDLE : S_DRAW_ENEMIES;
+			S_TEST: 					next_state = S_TEST;
 			default:				next_state = S_IDLE;
 		endcase
 	end
